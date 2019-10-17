@@ -1,0 +1,12 @@
+
+function veronese_map(line, degree)
+    curve:= [];
+    for x in line do
+        y:= [];
+        for i:= 0 to degree do
+            y cat:= [(x[1]^(degree - i))*(x[2]^i)];
+        end for;
+        curve cat:= [y];
+    end for;
+    return curve;
+end function;

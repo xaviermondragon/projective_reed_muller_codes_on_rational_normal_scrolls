@@ -1,0 +1,125 @@
+
+
+//Esta funcion genera las coordenadas de los puntos de un espacio 
+//proyectivo de una dimension dada sobre un campo finito
+
+function projective_space(field, dimension)
+    space:= [];
+    for i:= 0 to dimension do
+        for affine_coords in 
+        SetToSequence(Set(CartesianPower(field, dimension -i))) do
+            point:= [0: j in [0..i-1]];
+            point cat:= [1];
+            for coordinate in affine_coords do
+                point cat:= [coordinate];
+            end for;
+            space cat:= [point];
+        end for;    
+    end for;
+    return space;
+end function;
+
+//This is the Veronese map. Its domain is a projective line and
+//its image is a rational normal curve of degree d.
+function veronese_map(line, degree)
+    curve:= [];
+    for x in line do
+        y:= [];
+        for i:= 0 to degree do
+            y cat:= [(x[1]^(degree - i))*(x[2]^i)];
+        end for;
+        curve cat:= [y];
+    end for;
+    return curve;
+end function;
+
+//This function creates a rational normal scroll given a set of rational normal curves
+//and a ground field.
+function higher_scroll(field, curves)
+    n:= #curves - 1;
+    P_n:= projective_space(field, n);
+    number_spaces:= #curves[1];
+    scroll:= [];
+    for i:=1 to number_spaces do
+        for coefficients in P_n do;
+            point:= [];
+            for j:=1 to n+1 do
+                for coord in curves[j][i] do
+                    point cat:= [coefficients[j]*coord];
+                end for;
+            end for;
+            scroll cat:= [point];
+        end for;
+    end for;
+    return(scroll);
+end function;
+
+//This function generates all the monomials of a given degree on the coordinate ring of the scroll.
+//They are represented as tuples of natural numbers.
+function generate_monomials(degrees_curves, d)
+    l:= &+degrees_curves + #degrees_curves - 1;
+    coordinates:= [i: i in [1..l+1]];
+    monomials:= [];
+    combinations:= Multisets(SequenceToSet(coordinates), d);
+    for combination in combinations do
+        monomial:= [0: i in coordinates];
+        for exponent in combination do
+            monomial[exponent]:= monomial[exponent] + 1;
+        end for;
+        monomials cat:= [monomial];
+    end for;
+    return(monomials);
+end function;
+
+//This function evaluates a given monomial on a given point.
+function evaluate_monomial(monomial, point)
+    evaluation:= 1;
+    for i:= 1 to #monomial do
+        if monomial[i] ne 0 then
+            evaluation:= evaluation*point[i]^monomial[i];
+        end if;
+    end for;
+    return(evaluation);
+end function;
+
+//This function gives a generating set for a projective Reed-Muller type code
+//given a subset of points of a projective space and a set of monomials.
+function evaluation_morphism(set, monomials)
+    evaluations:= [];
+    for monomial in monomials do
+        evaluation:= [];
+        for point in set do
+            evaluation cat:= [evaluate_monomial(monomial, point)];
+        end for;
+        evaluations cat:= [evaluation];
+    end for;
+    return(evaluations);
+end function;
+
+
+
+//We define the parameters for the rational normal scroll
+//as well as the degree of the evaluation morphism.
+k := FiniteField(2);
+e := [3,2,1];
+d := 1;
+
+//We create the projective Reed-Muller type code following the steps of our article
+P_1:= projective_space(k,1);
+curves:= [veronese_map(P_1, degree): degree in e];
+scroll:= higher_scroll(k, curves);
+monomials:= generate_monomials(e, d);
+evaluations:= evaluation_morphism(scroll, monomials);
+
+//Now we compute the basic parameters of our codes
+M:= Matrix(k, #evaluations, #scroll, evaluations);
+C:= LinearCode(M);
+print(Length(C));
+print(Dimension(C));
+print(MinimumWeight(C));
+
+
+
+
+
+

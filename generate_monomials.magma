@@ -1,0 +1,15 @@
+
+function generate_monomials(degrees_curves, d)
+    l:= &+degrees_curves + #degrees_curves - 1;
+    coordinates:= [i: i in [1..l+1]];
+    monomials:= [];
+    combinations:= Multisets(SequenceToSet(coordinates), d);
+    for combination in combinations do
+        monomial:= [0: i in coordinates];
+        for exponent in combination do
+            monomial[exponent]:= monomial[exponent] + 1;
+        end for;
+        monomials cat:= [monomial];
+    end for;
+    return(monomials);
+end function;
