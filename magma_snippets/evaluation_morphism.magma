@@ -1,0 +1,12 @@
+
+function evaluation_morphism(set, monomials)
+    evaluations:= [];
+    for monomial in monomials do
+        evaluation:= [];
+        for point in set do
+            evaluation cat:= [evaluate_monomial(monomial, point)];
+        end for;
+        evaluations cat:= [evaluation];
+    end for;
+    return(evaluations);
+end function;
